@@ -155,7 +155,7 @@ jobs:
         task-definition: task-definition.json
         container-name: ${{ inputs.CONTAINER_NAME }}
         # image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        image: $ECR_REGISTRY/ACBC:$IMAGE_TAG
+        image: $ECR_REGISTRY/rsaldano-test:$IMAGE_TAG
 
 
 
