@@ -60,9 +60,9 @@ on:
         required: true
 
 jobs:
-  cd:
+  deploy_ecs_task:
     if: ${{ inputs.GH_PR_MERGED }} 
-    name: deploy to ${{ inputs.GH_ENV }} 
+    # name: deploy to ${{ inputs.GH_ENV }} 
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: ${{ inputs.GH_ENV }} 
