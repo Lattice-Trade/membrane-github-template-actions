@@ -33,22 +33,22 @@ jobs:
       with:
           ref: ${{ inputs.GH_BRANCH_NAME }}
 
-    - name: Use cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
-    - name: Install dependencies
-      if: steps.cache.outputs.cache-hit != 'true'
+    - name: Install node/npm/yarn
+      # if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/setup-node@v3
       with:
           node-version: ${{ inputs.NODE_VERSION }}
           registry-url: https://registry.npmjs.org/
 
-    - name: Code build
+    - name: Use cached app dependencies
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: node-modules-${{ hashFiles('**/package-lock.json') }}
+        # restore-keys: |
+        #   ${{ runner.os }}-node-
+
+    - name: Install dependencies
       run: npm ci --ignore-scripts
 
     - name: Run unit tests
@@ -56,4 +56,47 @@ jobs:
       run: npm test
 
     - name: Run lint
+      continue-on-error: true
       run: npm run lint
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@master
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ inputs.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@main
+
+    # - name: Get ECR password (temporary)
+    #   id: get-ecr-password
+    #   run: echo "::set-output name=password::$(aws ecr get-login-password)"
+
+    - uses: Lattice-Trade/github-action-slack-notify-build@main
+      with:
+        channel: ${{ inputs.SLACK_CHANNEL }}
+        status: STARTED
+        color: good
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_ALARMS_TOKEN }}
+
+    - name: Docker build & push
+      uses: docker/build-push-action@v3
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ inputs.ECR_REPOSITORY }}
+        IMAGE_TAG: ${{ inputs.GH_SHA }}
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        # tags: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        tags: $ECR_REGISTRY/ACBC:$IMAGE_TAG
+        cache-from: type=gha
+        cache-to: type=gha
+    
+    # - name: Logout of Amazon ECR
+    #   if: always()
+    #   run: docker logout ${{ steps.login-ecr.outputs.registry }}
