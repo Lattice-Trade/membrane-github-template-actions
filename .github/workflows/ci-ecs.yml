@@ -12,6 +12,9 @@ on:
       HAS_UNIT_TEST:
         required: true
         type: boolean
+      GH_SHA:
+        required: true
+        type: string
       GH_PR_MERGED:
         required: true
         type: boolean
