@@ -14,6 +14,6 @@ runs:
         node-version: ${{ inputs.NODE_VERSION }}
         registry-url: https://registry.npmjs.org/
         cache: npm
-        cache-dependency-path: package-lock.json
+        cache-dependency-path: ${{github.workspace}}/package-lock.json
     - run: npm ci
       shell: bash
