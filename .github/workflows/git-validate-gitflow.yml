@@ -2,6 +2,13 @@ name: '📦 Validate gitflow'
 
 on: 
   workflow_call:
+    inputs:
+      GH_BASE_REF:
+        required: true
+        type: string
+      GH_HEAD_REF:
+        required: true
+        type: string
     secrets:
       NPM_TOKEN:
         required: true
