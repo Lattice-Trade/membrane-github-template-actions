@@ -14,9 +14,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - uses: Lattice-Trade/membrane-github-template-actions/.github/actions/typescript/install/action.yml@feature/LM-9164-step-deduplication
+      - uses: Lattice-Trade/membrane-github-template-actions/.github/actions/typescript/install@feature/LM-9164-step-deduplication
         with:
           NODE_VERSION: ${{ inputs.NODE_VERSION }}
       - name: Run unit tests
