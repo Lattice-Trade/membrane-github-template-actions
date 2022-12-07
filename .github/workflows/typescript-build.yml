@@ -17,10 +17,10 @@ jobs:
       - name: Install dependencies
         uses: actions/setup-node@v3
         with:
-            node-version: ${{ inputs.NODE_VERSION }}
-            registry-url: https://registry.npmjs.org/
-            cache: npm
-            cache-dependency-path: package-lock.json
+          node-version: ${{ inputs.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org/
+          cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
       - name: Build code
         run: npm run build
