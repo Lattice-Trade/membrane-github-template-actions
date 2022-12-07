@@ -17,13 +17,16 @@ jobs:
       - uses: Lattice-Trade/membrane-github-composite-actions/npm/check-tests@feature/LM-9164-step-deduplication
         id: check-tests
       - uses: Lattice-Trade/membrane-github-composite-actions/npm/install@feature/LM-9164-step-deduplication
-        if: ${{ steps.check-tests.outputs.HAS_UNIT_TEST == 'true' }}
+        if: inputs.HAS_UNIT_TEST
         with:
           NODE_VERSION: ${{ inputs.NODE_VERSION }}
       - name: Run unit tests
         if: inputs.HAS_UNIT_TEST
         run: npm test
-      - name: run if tests DO NOT EXIST
-        if: ${{ steps.check-tests.outputs.HAS_UNIT_TEST == 'false' }}
-        run: ls -l
-        shell: bash
+      # - uses: Lattice-Trade/membrane-github-composite-actions/npm/install@feature/LM-9164-step-deduplication
+      #   if: ${{ steps.check-tests.outputs.HAS_UNIT_TEST == 'true' }}
+      #   with:
+      #     NODE_VERSION: ${{ inputs.NODE_VERSION }}
+      # - name: Run unit tests
+      #   if: ${{ steps.check-tests.outputs.HAS_UNIT_TEST == 'true' }}
+      #   run: npm run test
