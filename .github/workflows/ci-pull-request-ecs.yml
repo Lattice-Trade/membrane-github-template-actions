@@ -21,25 +21,25 @@ on:
 
 jobs:
   gitflow-validation:
-    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/git/validate-gitflow.yml@feature/LM-9164-step-deduplication
+    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/git-validate-gitflow.yml@feature/LM-9164-step-deduplication
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   test:
     needs: gitflow-validation
-    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript/test.yml@feature/LM-9164-step-deduplication
+    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript-test.yml@feature/LM-9164-step-deduplication
     with:
       node-version: ${{ inputs.NODE_VERSION }}
       HAS_UNIT_TEST: ${{ inputs.HAS_UNIT_TEST }}
 
   lint:
     needs: gitflow-validation
-    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript/lint.yml@feature/LM-9164-step-deduplication
+    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript-lint.yml@feature/LM-9164-step-deduplication
     with:
       node-version: ${{ inputs.NODE_VERSION }}
 
   build:
     needs: [test, lint]
-    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript/build.yml@feature/LM-9164-step-deduplication
+    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript-build.yml@feature/LM-9164-step-deduplication
     with:
       node-version: ${{ inputs.NODE_VERSION }}
