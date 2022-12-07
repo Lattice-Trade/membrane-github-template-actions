@@ -2,7 +2,7 @@ name: '📦 Test codebase'
 
 on: 
   workflow_call:
-    input:
+    inputs:
       NODE_VERSION:
         required: true
         type: string
