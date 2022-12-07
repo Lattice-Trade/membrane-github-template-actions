@@ -32,9 +32,9 @@ on:
         required: true
       NPM_TOKEN:
         required: true
-      AWS_ACCESS_KEY_ID:
+      AWS_ACCESS_KEY_ID_PROD:
         required: true
-      AWS_SECRET_ACCESS_KEY:
+      AWS_SECRET_ACCESS_KEY_PROD:
         required: true
 
 jobs:
