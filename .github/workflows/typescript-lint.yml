@@ -11,6 +11,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - uses: Lattice-Trade/membrane-github-template-actions/.github/actions/typescript/install/action.yml@feature/LM-9164-step-deduplication
         with:
           NODE_VERSION: ${{ inputs.NODE_VERSION }}
