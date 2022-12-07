@@ -11,7 +11,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: Lattice-Trade/membrane-github-template-actions/.github/actions/typescript/install@feature/LM-9164-step-deduplication
+      - uses: Lattice-Trade/membrane-github-composite-actions/npm/install@feature/LM-9164-step-deduplication
         with:
           NODE_VERSION: ${{ inputs.NODE_VERSION }}
       - name: Run lint

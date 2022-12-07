@@ -6,12 +6,12 @@ on:
       HAS_UNIT_TEST:
         required: true
         type: boolean
-      GH_BASE_REF:
-        required: true
-        type: string
-      GH_HEAD_REF:
-        required: true
-        type: string
+      # GH_BASE_REF:
+      #   required: true
+      #   type: string
+      # GH_HEAD_REF:
+      #   required: true
+      #   type: string
       NODE_VERSION:
         required: true
         type: string
@@ -24,7 +24,7 @@ jobs:
     uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/git-validate-gitflow.yml@feature/LM-9164-step-deduplication
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    # secrets: implicit ???
+    # secrets: implicit
 
   lint:
     needs: gitflow-validation
