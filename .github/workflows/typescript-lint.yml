@@ -11,16 +11,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        uses: actions/setup-node@v3
+      - uses: Lattice-Trade/membrane-github-template-actions/.github/actions/typescript/install-deps.yml@feature/LM-9164-step-deduplication
         with:
-          node-version: ${{ inputs.NODE_VERSION }}
-          registry-url: https://registry.npmjs.org/
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm ci
+          NODE_VERSION: ${{ inputs.NODE_VERSION }}
       - name: Run lint
         continue-on-error: true
         run: npm run lint
