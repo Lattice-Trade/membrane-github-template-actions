@@ -24,6 +24,13 @@ jobs:
     uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/git-validate-gitflow.yml@feature/LM-9164-step-deduplication
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # secrets: implicit ???
+
+  lint:
+    needs: gitflow-validation
+    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript-lint.yml@feature/LM-9164-step-deduplication
+    with:
+      NODE_VERSION: ${{ inputs.NODE_VERSION }}
 
   test:
     needs: gitflow-validation
@@ -31,12 +38,6 @@ jobs:
     with:
       NODE_VERSION: ${{ inputs.NODE_VERSION }}
       HAS_UNIT_TEST: ${{ inputs.HAS_UNIT_TEST }}
-
-  lint:
-    needs: gitflow-validation
-    uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/typescript-lint.yml@feature/LM-9164-step-deduplication
-    with:
-      NODE_VERSION: ${{ inputs.NODE_VERSION }}
 
   build:
     needs: [test, lint]
