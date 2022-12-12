@@ -52,6 +52,10 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      AWS_ACCESS_KEY_ID_PROD:
+        required: false
+      AWS_SECRET_ACCESS_KEY_PROD:
+        required: false
       NEW_RELIC_ACCOUNT_ID:
         required: false
       NEW_RELIC_API_KEY:
@@ -60,8 +64,24 @@ on:
         required: true
 
 jobs:
+  promote-staging-to-prod:
+    if: ${{ inputs.GH_PR_MERGED }} 
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Promote image from staging to production
+      # if: asdasd
+      uses: Lattice-Trade/membrane-github-composite-actions/.github/workflows/docker-promote-image.yml@feature/LM-9164-step-deduplication
+      with:
+        AWS_REGION: ${{ inputs.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ACCESS_KEY_ID_PROD: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+        AWS_SECRET_ACCESS_KEY_PROD: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+
   deploy_ecs_task:
     if: ${{ inputs.GH_PR_MERGED }} 
+    needs: promote-staging-to-prod
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: ${{ inputs.GH_ENV }} 
