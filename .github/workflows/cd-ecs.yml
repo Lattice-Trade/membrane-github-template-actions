@@ -65,12 +65,19 @@ on:
 
 jobs:
   promote-staging-to-prod:
+<<<<<<< HEAD
     if: ${{ inputs.GH_PR_MERGED }} 
+=======
+    if: ${{ inputs.GH_PR_MERGED && inputs.GH_BRANCH_NAME == 'main' }}
+>>>>>>> feecdc9 (Added image promotion workflow)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
     - name: Promote image from staging to production
+<<<<<<< HEAD
       # if: asdasd
+=======
+>>>>>>> feecdc9 (Added image promotion workflow)
       uses: Lattice-Trade/membrane-github-composite-actions/.github/workflows/docker-promote-image.yml@feature/LM-9164-step-deduplication
       with:
         AWS_REGION: ${{ inputs.AWS_REGION }}
@@ -78,6 +85,11 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_ACCESS_KEY_ID_PROD: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
         AWS_SECRET_ACCESS_KEY_PROD: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+<<<<<<< HEAD
+=======
+        GH_VERSION: ${{ inputs.GH_VERSION }}
+        ECR_NAME: ${{ inputs.ECR_NAME }}
+>>>>>>> feecdc9 (Added image promotion workflow)
 
   deploy_ecs_task:
     if: ${{ inputs.GH_PR_MERGED }} 
