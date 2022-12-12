@@ -45,6 +45,11 @@ on:
       NODE_VERSION:
         required: true
         type: string
+      METADATA_PACKAGE:
+        required: false
+        type: string
+        default: package.json
+        description: Package with application/project metadata.
     secrets:
       NPM_TOKEN:
         required: true
@@ -73,12 +78,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: main
+    - name: Fetch current app version
+      id: version
+      run: echo "OUTPUT=$(jq .version ${{ inputs.METADATA_PACKAGE }})" >> $GITHUB_ENV
     - name: Promote image from staging to production
+<<<<<<< HEAD
 <<<<<<< HEAD
       # if: asdasd
 =======
 >>>>>>> feecdc9 (Added image promotion workflow)
       uses: Lattice-Trade/membrane-github-composite-actions/.github/workflows/docker-promote-image.yml@feature/LM-9164-step-deduplication
+=======
+      uses: Lattice-Trade/membrane-github-template-actions/.github/workflows/docker-promote-image.yml@feature/LM-9164-step-deduplication
+>>>>>>> 0c0c791 (Renamed workflows)
       with:
         AWS_REGION: ${{ inputs.AWS_REGION }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -86,10 +102,15 @@ jobs:
         AWS_ACCESS_KEY_ID_PROD: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
         AWS_SECRET_ACCESS_KEY_PROD: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         GH_VERSION: ${{ inputs.GH_VERSION }}
         ECR_NAME: ${{ inputs.ECR_NAME }}
 >>>>>>> feecdc9 (Added image promotion workflow)
+=======
+        GH_VERSION: ${{ steps.version.OUTPUT }}
+        ECR_REPOSITORY: ${{ inputs.ECR_REPOSITORY }}
+>>>>>>> 0c0c791 (Renamed workflows)
 
   deploy_ecs_task:
     if: ${{ inputs.GH_PR_MERGED }} 
@@ -108,35 +129,6 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   
-    - name: Code build
-      run: npm ci --ignore-scripts
-
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-push-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ inputs.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ inputs.GH_SHA }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest . --build-arg NPM_TOKEN=${NPM_TOKEN}
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-    # - name: Run Trivy vulnerability scanner
-    #   uses: aquasecurity/trivy-action@master
-    #   with:
-    #       image-ref: '${{ steps.login-ecr.outputs.registry }}/${{ inputs.ECR_REPOSITORY }}:${{ inputs.GH_SHA }}'
-    #       format: 'table'
-    #       exit-code: '0'
-    #       ignore-unfixed: true
-    #       vuln-type: 'os,library'
-    #       severity: 'CRITICAL,HIGH'
-    #   env:
-    #       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #       ECR_REPOSITORY: ${{ inputs.ECR_REPOSITORY }}          
-    #       AWS_DEFAULT_REGION: ${{ inputs.AWS_REGION }}
-   
     - name: Download task definition
       env:
           TASK_DEFINITION: ${{ inputs.TASK_DEFINITION }}
@@ -153,7 +145,9 @@ jobs:
       with:
         task-definition: task-definition.json
         container-name: ${{ inputs.CONTAINER_NAME }}
-        image: ${{ steps.build-push-image.outputs.image }}
+        image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    # ENABLE LATER
 
     # - name: Deploy Amazon ECS task definition
     #   uses: aws-actions/amazon-ecs-deploy-task-definition@master
