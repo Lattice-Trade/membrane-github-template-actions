@@ -28,13 +28,6 @@ on:
       SLACK_CHANNEL:
         required: true
         type: string
-    # secrets:
-    #   AWS_ACCESS_KEY_ID:
-    #     required: true
-    #   AWS_SECRET_ACCESS_KEY:
-    #     required: true
-    #   NPM_TOKEN:
-    #     required: true
     outputs:
       IMAGE_NAME:
         description: "A FQDN of the image to be built and pushed"
