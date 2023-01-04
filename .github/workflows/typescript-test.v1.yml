@@ -1,3 +1,14 @@
+name: '📦 Test codebase'
+
+on: 
+  workflow_call:
+    inputs:
+      NODE_VERSION:
+        required: true
+        type: string
+      HAS_UNIT_TEST:
+        required: true
+        type: boolean
 
 jobs:
   test:
