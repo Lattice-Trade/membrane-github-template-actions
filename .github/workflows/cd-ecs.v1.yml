@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       AWS_REGION:
-        required: true
+        required: false
         type: string
+        default: us-east-2
       ECR_REPOSITORY:
         required: true
         type: string
@@ -45,12 +46,20 @@ on:
       NODE_VERSION:
         required: true
         type: string
+      IMAGE_NAME:
+        # Output from build job (see typescript-docker-build.yml)
+        required: false
+        type: string
     secrets:
       NPM_TOKEN:
         required: true
       AWS_ACCESS_KEY_ID:
         required: true
       AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_ACCESS_KEY_ID_PROD:
+        required: true
+      AWS_SECRET_ACCESS_KEY_PROD:
         required: true
       NEW_RELIC_ACCOUNT_ID:
         required: false
@@ -60,97 +69,41 @@ on:
         required: true
 
 jobs:
-  cd:
-    if: ${{ inputs.GH_PR_MERGED }} 
-    name: deploy to ${{ inputs.GH_ENV }} 
+  deploy_ecs_task:
+    if: ${{ inputs.GH_PR_MERGED }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    environment: ${{ inputs.GH_ENV }} 
+    environment: ${{ inputs.GH_ENV }}
     env:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
     steps:
-    
-    - uses: Lattice-Trade/github-action-slack-notify-build@main
-      with:
-        channel: ${{ inputs.SLACK_CHANNEL }}
-        status: STARTED
-        color: good
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_ALARMS_TOKEN }}
-
     - name: Checkout
       uses: actions/checkout@v3
       with:
-          ref: ${{ inputs.GH_BRANCH_NAME }} 
+        ref: ${{ inputs.GH_BRANCH_NAME }}
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@master
+    - name: Login to ECR
+      id: ecr-login
+      uses: Lattice-Trade/membrane-github-template-actions/composite-actions/aws/ecr-login.v1@main
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ inputs.AWS_REGION }}
+        AWS_REGION: ${{ inputs.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@main
-  
-    - name: Use cache dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
-    - name: Install dependencies
-      if: steps.cache.outputs.cache-hit != 'true'
-      uses: actions/setup-node@v3
-      with:
-          node-version: ${{ inputs.NODE_VERSION }}
-          registry-url: https://registry.npmjs.org/
-  
-    - name: Code build
-      run: npm ci --ignore-scripts
-
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-push-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ inputs.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ inputs.GH_SHA }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest . --build-arg NPM_TOKEN=${NPM_TOKEN}
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-    # - name: Run Trivy vulnerability scanner
-    #   uses: aquasecurity/trivy-action@master
-    #   with:
-    #       image-ref: '${{ steps.login-ecr.outputs.registry }}/${{ inputs.ECR_REPOSITORY }}:${{ inputs.GH_SHA }}'
-    #       format: 'table'
-    #       exit-code: '0'
-    #       ignore-unfixed: true
-    #       vuln-type: 'os,library'
-    #       severity: 'CRITICAL,HIGH'
-    #   env:
-    #       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #       ECR_REPOSITORY: ${{ inputs.ECR_REPOSITORY }}          
-    #       AWS_DEFAULT_REGION: ${{ inputs.AWS_REGION }}
-   
     - name: Download task definition
       env:
           TASK_DEFINITION: ${{ inputs.TASK_DEFINITION }}
       run: |
         aws ecs describe-task-definition --task-definition ${TASK_DEFINITION} --query taskDefinition > task-definition.json
-        
+
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@master
       with:
         task-definition: task-definition.json
         container-name: ${{ inputs.CONTAINER_NAME }}
-        image: ${{ steps.build-push-image.outputs.image }}
+        # One of the two will be an empty string by design
+        image: ${{ inputs.IMAGE_NAME }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@master
