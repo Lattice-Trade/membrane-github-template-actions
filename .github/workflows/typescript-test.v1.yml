@@ -23,14 +23,8 @@ jobs:
         uses: Lattice-Trade/membrane-github-template-actions/composite-actions/npm/setup-node.v1@main
         with:
           NODE_VERSION: ${{ inputs.NODE_VERSION }}
-      - name: Download artifact of dependencies
-        uses: actions/download-artifact@v3
-        with:
-          name: node_modules.tgz
-          path: .
-      - name: Unzip artifact of dependencies
-        run: tar -xzf node_modules.tgz
-        shell: bash
+      - name: Download and unzip dependencies artifact
+        uses: Lattice-Trade/membrane-github-template-actions/composite-actions/git/download-artifact.v1@feature/{LM-10511}-npm-publishing
       - name: Run unit tests
         if: inputs.HAS_UNIT_TEST
         run: npm test
